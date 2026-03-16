@@ -1,0 +1,64 @@
+[gd_scene load_steps=8 format=3 uid="uid://qq13v0rn7uhu"]
+
+[ext_resource type="Shader" uid="uid://4afwga1qt1oq" path="res://scenes/terrain/Water.gdshader" id="1_0y5y4"]
+
+[sub_resource type="Curve3D" id="Curve3D_1lu5u"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 45.9475, -18.8527, 42.332, 0, 0, 0, 0, 0, 0, 32.4539, -19.209, 35.3017),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_22pjk"]
+noise_type = 3
+frequency = 0.029
+fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mskt3"]
+seamless = true
+as_normal_map = true
+bump_strength = 1.5
+noise = SubResource("FastNoiseLite_22pjk")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_x58h0"]
+noise_type = 3
+fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_c5xxk"]
+seamless = true
+as_normal_map = true
+bump_strength = 1.5
+noise = SubResource("FastNoiseLite_x58h0")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0y5y4"]
+render_priority = 0
+shader = ExtResource("1_0y5y4")
+shader_parameter/albedo = Color(0, 0.145098, 0.619608, 1)
+shader_parameter/metalic = 0.0
+shader_parameter/roughness = 0.02
+shader_parameter/texture_normal = SubResource("NoiseTexture2D_mskt3")
+shader_parameter/texture_normal2 = SubResource("NoiseTexture2D_c5xxk")
+shader_parameter/wave_direction = Vector2(2, 0)
+shader_parameter/wave_direction2 = Vector2(2, 0)
+shader_parameter/time_scale = 0.005
+
+[node name="Path3D" type="Path3D"]
+transform = Transform3D(0.999998, 0, 0.00185005, 0, 1, 0, -0.00185005, 0, 0.999998, 0, 0, 0)
+curve = SubResource("Curve3D_1lu5u")
+
+[node name="Water" type="CSGPolygon3D" parent="."]
+transform = Transform3D(0.999998, 0, -0.00185005, 0, 1, 0, 0.00185005, 0, 0.999998, -255.42, 48.0218, -894.221)
+use_collision = true
+polygon = PackedVector2Array(-15.6603, -7.70918, -15.2538, 1.19895, 11.5845, 1.54873, 11.791, -7.45454)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 1.0
+path_simplify_angle = 8.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = false
+path_continuous_u = true
+path_u_distance = 0.0
+path_joined = false
+material = SubResource("ShaderMaterial_0y5y4")

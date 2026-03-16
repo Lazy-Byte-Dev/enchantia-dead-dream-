@@ -1,0 +1,109 @@
+[gd_scene load_steps=14 format=3 uid="uid://cb5a6mscpkp85"]
+
+[ext_resource type="Shader" uid="uid://4afwga1qt1oq" path="res://scenes/terrain/Water.gdshader" id="1_uqx3c"]
+[ext_resource type="Terrain3DMaterial" uid="uid://cd6o71jognddr" path="res://scenes/terrain/terrain3D.tres" id="2_ine53"]
+[ext_resource type="Terrain3DAssets" uid="uid://ba4ekynmaye5l" path="res://scenes/terrain/terrain3DAssets.tres" id="3_h3ybg"]
+[ext_resource type="PackedScene" uid="uid://b6gle7nwge0v" path="res://scenes/player/player.tscn" id="4_uqx3c"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_64blg"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_x03iu"]
+sky_material = SubResource("ProceduralSkyMaterial_64blg")
+
+[sub_resource type="Environment" id="Environment_igvj6"]
+background_mode = 2
+sky = SubResource("Sky_x03iu")
+tonemap_mode = 2
+
+[sub_resource type="Curve3D" id="Curve3D_1lu5u"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -0.579208, -0.434242, 2.1499, 0, 0, 0, 0, 0, 0, -0.684647, -1.50371, -5.10992, 0, 0, 0, 0, 0, 0, -18.4424, -5.43594e-05, -45.0453, 0, 0, 0, 0, 0, 0, -17.0724, -5.34058e-05, -70.9813, 0, 0, 0, 0, 0, 0, -31.8443, -5.43594e-05, -95.4594, 0, 0, 0, 0, 0, 0, -70.4162, 1.49361, -155.719, 0, 0, 0, 0, 0, 0, -63.7568, 1.83414, -177.443, 0, 0, 0, 0, 0, 0, -68.7455, 1.79357, -199.88, 0, 0, 0, 0, 0, 0, -72.2973, 1.79826, -220.671, 0, 0, 0, 0, 0, 0, -75.6329, 2.08937, -249.837, 0, 0, 0, 0, 0, 0, -65.7063, 2.08933, -273.199, 0, 0, 0, 0, 0, 0, -65.0893, 4.11362, -309.732, 0, 0, 0, 0, 0, 0, -65.3142, 4.16185, -336.653, 0, 0, 0, 0, 0, 0, -91.2902, 5.75238, -382.583, 0, 0, 0, 0, 0, 0, -180.117, 9.30606, -495.912, 0, 0, 0, 0, 0, 0, -195.358, 9.20488, -512.138, 0, 0, 0, 0, 0, 0, -191.438, 11.7504, -552.236, 0, 0, 0, 0, 0, 0, -193.528, 14.1164, -602.76, 0, 0, 0, 0, 0, 0, -190.289, 16.6532, -651.608, 0, 0, 0, 0, 0, 0, -201.241, 17.6248, -671.131, 0, 0, 0, 0, 0, 0, -189.546, 19.4719, -694.273, 0, 0, 0, 0, 0, 0, -186.181, 20.7323, -731.351, 0, 0, 0, 0, 0, 0, -191.841, 22.6811, -753.389, 0, 0, 0, 0, 0, 0, -192.318, 25.103, -792.397, 0, 0, 0, 0, 0, 0, -193.096, 27.5672, -817.671, 0, 0, 0, 0, 0, 0, -199.076, 28.2753, -831.062, 0, 0, 0, 0, 0, 0, -204.807, 29.125, -851.4, 0, 0, 0, 0, 0, 0, -199.264, 29.8877, -857.813, 0, 0, 0, 0, 0, 0, -170.227, 31.6161, -876.064, 0, 0, 0, 0, 0, 0, -155.242, 33.4685, -881.028, 0, 0, 0, 0, 0, 0, -144.547, 34.3469, -879.345, 0, 0, 0, 0, 0, 0, -136.925, 34.8597, -887.413, 0, 0, 0, 0, 0, 0, -132.623, 36.6322, -900.005, 0, 0, 0, 0, 0, 0, -116.006, 36.961, -904.804, 0, 0, 0, 0, 0, 0, -106.711, 39.5774, -917.624, 0, 0, 0, 0, 0, 0, -96.2473, 39.4364, -919.506, 0, 0, 0, 0, 0, 0, -80.2802, 42.6159, -940.872, 0, 0, 0, 0, 0, 0, -80.2713, 43.067, -951.802, 0, 0, 0, 0, 0, 0, -69.5099, 45.7414, -986.252, 0, 0, 0, 0, 0, 0, -71.1372, 48.9772, -1009.84, 0, 0, 0, 0, 0, 0, -82.0471, 51.1095, -1023.65, 0, 0, 0, 0, 0, 0, -79.9236, 54.7024, -1042.38, 0, 0, 0, 0, 0, 0, -81.3376, 55.4806, -1049.04, 0, 0, 0, 0, 0, 0, -70.36, 57.9009, -1071.84, 0, 0, 0, 0, 0, 0, -83.0888, 62.0383, -1100.34, 0, 0, 0, 0, 0, 0, -79.7352, 64.0565, -1114.13, 0, 0, 0, 0, 0, 0, -73.6029, 66.1516, -1140.19, 0, 0, 0, 0, 0, 0, -75.4603, 69.8467, -1164.2, 0, 0, 0, 0, 0, 0, -56.0581, 71.6507, -1173.07, 0, 0, 0, 0, 0, 0, -50.5077, 81.0874, -1226.37),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 50
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_22pjk"]
+noise_type = 3
+frequency = 0.029
+fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mskt3"]
+seamless = true
+as_normal_map = true
+bump_strength = 1.5
+noise = SubResource("FastNoiseLite_22pjk")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_x58h0"]
+noise_type = 3
+fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_c5xxk"]
+seamless = true
+as_normal_map = true
+bump_strength = 1.5
+noise = SubResource("FastNoiseLite_x58h0")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_avun7"]
+render_priority = 0
+shader = ExtResource("1_uqx3c")
+shader_parameter/albedo = Color(0, 0.145098, 0.619608, 1)
+shader_parameter/metalic = 0.0
+shader_parameter/roughness = 0.02
+shader_parameter/texture_normal = SubResource("NoiseTexture2D_mskt3")
+shader_parameter/texture_normal2 = SubResource("NoiseTexture2D_c5xxk")
+shader_parameter/wave_direction = Vector2(2, 0)
+shader_parameter/wave_direction2 = Vector2(2, 0)
+shader_parameter/time_scale = 0.005
+
+[node name="Terrain" type="Node3D"]
+
+[node name="Env" type="Node" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Env"]
+environment = SubResource("Environment_igvj6")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Env"]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Water" type="Node" parent="."]
+
+[node name="Path3D" type="Path3D" parent="Water"]
+transform = Transform3D(0.999998, 0, 0.00185005, 0, 1, 0, -0.00185005, 0, 0.999998, 257.074, -48.0218, 893.747)
+curve = SubResource("Curve3D_1lu5u")
+
+[node name="Water" type="CSGPolygon3D" parent="Water/Path3D"]
+transform = Transform3D(0.999998, 0, -0.00185005, 0, 1, 0, 0.00185005, 0, 0.999998, -255.42, 48.0218, -894.221)
+visibility_range_begin_margin = 0.1
+visibility_range_end = 200.0
+visibility_range_end_margin = 0.1
+use_collision = true
+collision_layer = 32
+collision_mask = 0
+polygon = PackedVector2Array(-15.6603, -7.70918, -15.2538, 1.19895, 11.5845, 1.54873, 11.791, -7.45454)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 1.0
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = false
+path_continuous_u = true
+path_u_distance = 0.0
+path_joined = false
+material = SubResource("ShaderMaterial_avun7")
+
+[node name="Terrain3D" type="Terrain3D" parent="."]
+data_directory = "res://data"
+material = ExtResource("2_ine53")
+assets = ExtResource("3_h3ybg")
+top_level = true
+metadata/_edit_lock_ = true
+
+[node name="Trees2" type="Node" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("4_uqx3c")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64.1397, -3.73758, 53.2184)

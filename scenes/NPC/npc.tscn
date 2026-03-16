@@ -358,7 +358,7 @@ stats = ExtResource("2_8aash")
 script = ExtResource("3_4cafu")
 
 [node name="RightHand" type="BoneAttachment3D" parent="."]
-transform = Transform3D(0.18913, -0.484177, -0.854285, 0.918387, -0.220709, 0.328411, -0.347557, -0.846676, 0.402919, 0.105575, 0.939427, -0.380067)
+transform = Transform3D(0.189132, -0.484176, -0.854285, 0.918386, -0.220708, 0.328412, -0.347557, -0.846676, 0.402918, 0.105575, 0.939426, -0.380067)
 bone_name = "RightHand"
 bone_idx = 34
 use_external_skeleton = true

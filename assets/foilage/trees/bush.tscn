@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dgtgcfka1bmes"]
+
+[ext_resource type="PackedScene" uid="uid://qkqhvaxe6uxi" path="res://assets/foilage/violet_bush.glb" id="1_33iuh"]
+
+[node name="Bush" type="Node3D"]
+
+[node name="Sketchfab_Scene" parent="." instance=ExtResource("1_33iuh")]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)

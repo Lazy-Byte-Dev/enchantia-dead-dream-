@@ -1,0 +1,191 @@
+[gd_scene load_steps=8 format=4 uid="uid://ll647j7ykh3n"]
+
+[ext_resource type="Texture2D" uid="uid://bs5erolvaboh2" path="res://assets/grass/grass_Image_1.png" id="2_gk7vj"]
+[ext_resource type="Texture2D" uid="uid://ieb26gq48yfn" path="res://assets/grass/grass_Image_3.png" id="4_q7e70"]
+
+[sub_resource type="Shader" id="Shader_ssdr1"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.4.1.stable's StandardMaterial3D.
+// With added wind displacement.
+
+shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_burley, specular_schlick_ggx;
+
+// --- Original Uniforms ---
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform float alpha_scissor_threshold : hint_range(0.0, 1.0, 0.001);
+// uniform ivec2 albedo_texture_size; // Usually not needed unless doing specific texture size operations
+uniform float point_size : hint_range(0.1, 128.0, 0.1); // For point rendering mode, might not be relevant for grass meshes
+
+uniform float roughness : hint_range(0.0, 1.0);
+uniform sampler2D texture_metallic : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+
+uniform float specular : hint_range(0.0, 1.0, 0.01);
+uniform float metallic : hint_range(0.0, 1.0, 0.01);
+
+uniform sampler2D texture_normal : hint_roughness_normal, filter_linear_mipmap, repeat_enable;
+uniform float normal_scale : hint_range(-16.0, 16.0);
+
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+// --- Wind Uniforms ---
+// IMPORTANT: Assign a NoiseTexture2D resource to this uniform in the Godot Inspector!
+uniform sampler2D wind_noise_texture : filter_linear_mipmap, repeat_enable;
+uniform float wind_strength : hint_range(0.0, 2.0, 0.01) = 0.1; // How far the grass bends
+uniform vec3 wind_direction = vec3(1.0, 0.0, 0.0); // Primary wind direction (will be normalized)
+uniform float wind_speed : hint_range(0.0, 5.0, 0.01) = 0.5; // How fast the wind pattern moves
+uniform float wind_noise_scale : hint_range(0.1, 10.0, 0.1) = 1.5; // Size of the wind gusts/waves
+uniform float wind_bend_factor : hint_range(0.1, 5.0, 0.1) = 1.0; // Power applied to UV.y, controls how sharply the top bends (1=linear, >1 bends more at top)
+uniform float wind_sway_speed_multiplier : hint_range(0.1, 5.0, 0.1) = 1.0; // Individual blade sway speed relative to overall wind speed
+
+void vertex() {
+	// --- Original UV calculation ---
+	UV = UV * uv1_scale.xy + uv1_offset.xy;
+
+	// --- Wind Calculation ---
+	// Use a copy of the original vertex position for noise calculation
+	vec3 world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+
+	// Ensure direction is normalized (safer if user inputs non-normalized vector)
+	// Add small offset to avoid normalizing zero vector if user inputs (0,0,0)
+	vec3 normalized_wind_dir = normalize(wind_direction + vec3(0.00001, 0.0, 0.0));
+
+	// Calculate UV coordinates for sampling the noise texture
+	// Use world position (XZ plane) and time (TIME)
+	// Animate noise lookup over time based on wind speed and direction
+	// Adding world_pos.y slightly varies the animation vertically
+	// Using two time components adds complexity to the movement
+	float time_component_1 = TIME * wind_speed;
+	float time_component_2 = TIME * wind_speed * wind_sway_speed_multiplier * 0.7; // Slightly different speed for more variation
+	vec2 noise_uv = world_pos.xz * wind_noise_scale * 0.1; // Base spatial noise coord (scaled down)
+	noise_uv += normalized_wind_dir.xz * time_component_1 * 0.1; // Move pattern along wind direction
+	noise_uv += vec2(time_component_2 * 0.05, -time_component_2 * 0.03); // Add secondary swirling motion over time
+
+	// Sample the noise texture (use .r channel for grayscale noise)
+	float noise_value = texture(wind_noise_texture, noise_uv).r;
+
+	// Remap noise from [0, 1] to [-1, 1] for back-and-forth sway
+	float sway = (noise_value * 2.0) - 1.0;
+
+	// Calculate bend amount based on vertical UV coordinate (0 at base, 1 at tip)
+	// pow(UV.y, factor) makes the top bend more sharply. Ensure UV.y is clamped positive.
+	float bend_amount = pow(max(0.0, UV.y), wind_bend_factor);
+
+	// Calculate the final offset in world space
+	// Apply sway along the normalized wind direction
+	vec3 wind_offset_world = normalized_wind_dir * sway * wind_strength * bend_amount;
+
+	// The offset needs to be applied in model space, so transform it back
+	// Inverse MODEL_MATRIX might be expensive. A common approximation for direction vectors
+	// (ignoring scale/shear) is to use the inverse transpose of the upper 3x3,
+	// but simpler is often to just add the world offset directly if non-uniform scaling isn't extreme.
+	// Let's try adding the world offset directly first, it often looks acceptable for wind.
+	// For correctness with non-uniform scaling, transform offset back to model space:
+	// vec3 wind_offset_model = (inverse(MODEL_MATRIX) * vec4(wind_offset_world, 0.0)).xyz;
+	// VERTEX += wind_offset_model;
+
+	// Simpler approach (add world offset directly to world position and transform back):
+	// Calculate final world position
+	vec3 final_world_pos = world_pos + wind_offset_world;
+	// Transform final world position back to model space for VERTEX output
+	VERTEX = (inverse(MODEL_MATRIX) * vec4(final_world_pos, 1.0)).xyz;
+
+	// --- End Wind Calculation ---
+
+	// If you experience issues with lighting/normals, you might need to recalculate NORMAL
+	// based on the displaced vertex positions. This is complex and often omitted for simple effects.
+	// Example (simplified, might need adjustment):
+	// NORMAL = normalize((inverse(MODEL_MATRIX) * vec4(normalize(cross(dFdx(final_world_pos), dFdy(final_world_pos))), 0.0)).xyz);
+}
+
+void fragment() {
+	vec2 base_uv = UV; // UV might have been modified by vertex shader, use the modified one.
+
+	vec4 albedo_tex = texture(texture_albedo, base_uv);
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+
+	float metallic_tex = dot(texture(texture_metallic, base_uv), metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	SPECULAR = specular;
+
+	vec4 roughness_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
+	float roughness_tex = dot(texture(texture_roughness, base_uv), roughness_texture_channel);
+	ROUGHNESS = roughness_tex * roughness;
+
+	// Normal Map: Enabled (Applied after wind displacement)
+	NORMAL_MAP = texture(texture_normal, base_uv).rgb;
+	NORMAL_MAP_DEPTH = normal_scale;
+
+	ALPHA *= albedo.a * albedo_tex.a;
+	ALPHA_SCISSOR_THRESHOLD = alpha_scissor_threshold;
+}"
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ssdr1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u6ql2"]
+resource_name = "green"
+render_priority = 0
+shader = SubResource("Shader_ssdr1")
+shader_parameter/albedo = Color(1, 1, 1, 1)
+shader_parameter/texture_albedo = ExtResource("4_q7e70")
+shader_parameter/alpha_scissor_threshold = 0.454612
+shader_parameter/point_size = 1.0
+shader_parameter/roughness = 1.0
+shader_parameter/metallic_texture_channel = Vector4(1, 0, 0, 0)
+shader_parameter/specular = 0.5
+shader_parameter/metallic = 0.0
+shader_parameter/texture_normal = ExtResource("2_gk7vj")
+shader_parameter/normal_scale = 1.0
+shader_parameter/uv1_scale = Vector3(1, 1, 1)
+shader_parameter/uv1_offset = Vector3(0, 0, 0)
+shader_parameter/uv2_scale = Vector3(1, 1, 1)
+shader_parameter/uv2_offset = Vector3(0, 0, 0)
+shader_parameter/wind_noise_texture = SubResource("NoiseTexture2D_ssdr1")
+shader_parameter/wind_strength = 0.15
+shader_parameter/wind_direction = Vector3(1, 0, 0)
+shader_parameter/wind_speed = 1.0
+shader_parameter/wind_noise_scale = 1.5
+shader_parameter/wind_bend_factor = 1.0
+shader_parameter/wind_sway_speed_multiplier = 1.0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_2fn43"]
+_surfaces = [{
+"aabb": AABB(-0.532202, -0.0622387, -0.625999, 1.10128, 0.690458, 1.24962),
+"format": 34896613377,
+"index_count": 36,
+"index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcA"),
+"name": "green",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("8O8SCz2AAAB8BxILPYAAAHwHTfk9gAAA8O9N+T2AAACF0QAAyccAAKkM2BWEWwAAaiKt/zNLAABG59XpeLcAAAAAihCvsQAAp3MWFQAAAAAQk8j7rREAAGgfPfddwwAASpt4CV7qAAD1gGsJ0x4AAMWM5fafHQAAGafx9inpAACKNykXvR4AAP//cAHEhQAAEfhF6rygAACcL///tTkAALq8hgX//wAAbh0MC9VqAADbIwL5MWgAACbDffNb/QAA")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_c7a3i"]
+resource_name = "grass_green-material"
+_surfaces = [{
+"aabb": AABB(-0.532202, -0.0622387, -0.625999, 1.10128, 0.690458, 1.24962),
+"attribute_data": PackedByteArray("///pAQAA6QEAAGam//9mpv//6QEAAOkBAABmpv//Zqb//+kBAADpAQAAZqb//+kBAADpAQAAZqb//2am///pAQAA6QEAAGam///pAQAA6QEAAGam///pAQAAZqb//2am///pAQAAZqb//2am///pAQAAZqb//2am"),
+"format": 34896613399,
+"index_count": 36,
+"index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACwAMAA0ACwANAA4ADwAQABEAEgATABQAFQAWABcAGAAZABoAGwAcAB0A"),
+"material": SubResource("ShaderMaterial_u6ql2"),
+"name": "green",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 30,
+"vertex_data": PackedByteArray("8O8SCz2A/n98BxILPYD+f3wHTfk9gP5/8O9N+T2A/n+F0QAAyccxaKkM2BWEWzFoaiKt/zNLMWhG59XpeLcxaAAAihCvsXgqp3MWFQAAeCoQk8j7rRF4KkqbeAle6o1E9YBrCdMejUTFjOX2nx2NRBmn8fYp6Y1EijcpF70eoRX//3ABxIWhFRH4Req8oKEVuryGBf//uV5uHQwL1Wq5XtsjAvkxaLleAACKEK+xeCoQk8j7rRF4KmgfPfddw3gqijcpF70eoRUR+EXqvKChFZwv//+1OaEVuryGBf//uV7bIwL5MWi5XibDffNb/ble/3////9/////f////3///z6Z3dU+md3VPpnd1T6Z3dUvh+PqL4fj6i+H4+pHhQX2R4UF9keFBfZHhQX2DnMrAA5zKwAOcysASIUC9kiFAvZIhQL2L4fj6i+H4+ovh+PqDnMrAA5zKwAOcysASIUC9kiFAvZIhQL2")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_2fn43")
+
+[node name="green-material" type="MeshInstance3D"]
+transform = Transform3D(-0.264315, -0.00336875, 0.219776, 0.0199716, 0.594409, 0.010823, -0.360187, 0.0354307, -0.160677, 0, 0, 0)
+mesh = SubResource("ArrayMesh_c7a3i")
+skeleton = NodePath("")

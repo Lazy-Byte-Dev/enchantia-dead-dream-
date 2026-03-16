@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bae5ii6xy47uo"]
+
+[ext_resource type="ArrayMesh" uid="uid://brathuu054fcs" path="res://assets/grass/grass.tres" id="1_kp0er"]
+
+[node name="mid-material" type="MeshInstance3D"]
+transform = Transform3D(0.182389, -0.0472414, 0.982091, 0.0446583, 0.998212, 0.0397231, -0.982212, 0.0366136, 0.184172, 0, 0, 0)
+mesh = ExtResource("1_kp0er")
+skeleton = NodePath("")
